@@ -133,3 +133,17 @@ Rules:
 - Do not hardcode user-language prose in pipeline scripts.
 - Generate user-visible analysis text from subagent output, with language controlled by user-selected settings and `lang` input.
 - Fallback local analysis in scripts is generic/minimal; preferred path is subagent output following the prompt template.
+
+
+## Orchestration note (important)
+
+`run_analysis_pipeline.py` is a local script and does **not** call OpenClaw tools by itself.
+Subagent execution must be orchestrated by the agent layer using `sessions_spawn`.
+
+Required runtime sequence:
+1. Main agent prepares `subagent_input.json` from exported text.
+2. Main agent calls `sessions_spawn` (model/thinking/timeout confirmed with user).
+3. Subagent returns analysis JSON (schema-conformant).
+4. Main agent passes that file via `--analysis-json` to `run_analysis_pipeline.py` for DB/apply.
+
+If step 2 is skipped, pipeline falls back to local minimal analysis (only for emergency/testing).
