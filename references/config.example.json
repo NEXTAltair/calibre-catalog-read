@@ -1,0 +1,5 @@
+{
+  "with_library": "http://127.0.0.1:8080/#MyLibrary",
+  "username": "",
+  "password_env": "CALIBRE_PASSWORD"
+}
