@@ -116,6 +116,8 @@ Book-reading analysis is a heavy task. Use a subagent with a lightweight model f
 
 - Prompt template: `references/subagent-analysis.prompt.md`
 - Output schema: `references/subagent-analysis.schema.json`
+- Input preparation helper: `scripts/prepare_subagent_input.py`
+  - Splits extracted text into multiple files to avoid read-tool single-line size issues.
 
 Rules:
 - Use subagent only for heavy analysis generation; keep main agent lightweight and non-blocking.
@@ -140,9 +142,15 @@ Rules:
 Subagent execution must be orchestrated by the agent layer using `sessions_spawn`.
 
 Required runtime sequence:
-1. Main agent prepares `subagent_input.json` from exported text.
+1. Main agent prepares `subagent_input.json` + chunked `source_files` from extracted text.
+   - Use:
+   ```bash
+   python3 skills/calibre-catalog-read/scripts/prepare_subagent_input.py \
+     --book-id <id> --title "<title>" --lang ja \
+     --text-path /tmp/book_<id>.txt --out-dir /tmp/calibre_subagent_<id>
+   ```
 2. Main agent calls `sessions_spawn` (model/thinking/timeout confirmed with user).
-3. Subagent returns analysis JSON (schema-conformant).
+3. Subagent reads all `source_files` and returns analysis JSON (schema-conformant).
 4. Main agent passes that file via `--analysis-json` to `run_analysis_pipeline.py` for DB/apply.
 
 If step 2 is skipped, pipeline falls back to local minimal analysis (only for emergency/testing).

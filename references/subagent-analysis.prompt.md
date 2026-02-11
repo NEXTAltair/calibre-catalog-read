@@ -6,7 +6,7 @@ Use this template with `sessions_spawn` for analysis-only tasks.
 - `book_id`: integer
 - `lang`: `ja` or `en`
 - `title`: string
-- `source_excerpt`: plain text extracted from book
+- `source_files`: array of text file paths (read all in order)
 
 ## Prompt
 You are an analysis worker for a Calibre pipeline.
@@ -19,8 +19,10 @@ Input:
 - book_id: {{book_id}}
 - lang: {{lang}}
 - title: {{title}}
-- source_excerpt:
-{{source_excerpt}}
+- source_files:
+{{source_files}}
+
+Read all files in `source_files` in order and analyze combined content.
 
 Output schema: `references/subagent-analysis.schema.json`
 

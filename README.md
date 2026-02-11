@@ -39,6 +39,16 @@ python3 scripts/run_analysis_pipeline.py \
   --book-id 3 --lang ja
 ```
 
+## Subagent input chunking (recommended)
+
+To avoid read-tool line-size issues, split extracted text and pass file list to subagent via `subagent_input.json`:
+
+```bash
+python3 scripts/prepare_subagent_input.py \
+  --book-id 3 --title "<title>" --lang ja \
+  --text-path /tmp/book_3.txt --out-dir /tmp/calibre_subagent_3
+```
+
 
 ## Low-text safeguard
 
