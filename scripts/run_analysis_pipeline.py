@@ -3,6 +3,9 @@ from __future__ import annotations
 import argparse, hashlib, json, os, re, subprocess, tempfile
 from pathlib import Path
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+SKILL_ROOT = SCRIPT_DIR.parent
+
 
 def run(cmd: list[str]) -> str:
     cp = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -79,7 +82,7 @@ def main():
     fhash = "sha256:" + hashlib.sha256(src.read_bytes()).hexdigest()
 
     # status check
-    st = json.loads(run(["python3", "skills/calibre-catalog-read/scripts/analysis_db.py", "status", "--db", ns.db, "--book-id", str(ns.book_id), "--format", ns.format]))
+    st = json.loads(run(["python3", str(SCRIPT_DIR / "analysis_db.py"), "status", "--db", ns.db, "--book-id", str(ns.book_id), "--format", ns.format]))
     if st.get("status") and st["status"].get("file_hash") == fhash:
         print(json.dumps({"ok": True, "skipped": True, "reason": "same_hash", "book_id": ns.book_id, "file_hash": fhash}, ensure_ascii=False))
         return
@@ -106,11 +109,11 @@ def main():
     }
 
     # upsert cache record
-    subprocess.run(["python3", "skills/calibre-catalog-read/scripts/analysis_db.py", "upsert", "--db", ns.db],
+    subprocess.run(["python3", str(SCRIPT_DIR / "analysis_db.py"), "upsert", "--db", ns.db],
                    input=json.dumps(record, ensure_ascii=False), text=True, check=True)
 
     payload = {"id": ns.book_id, "analysis": {"lang": ns.lang, "summary": record["summary"], "highlights": record["highlights"], "reread": record["reread"], "tags": record["tags"], "file_hash": fhash}}
-    subprocess.run(["python3", "skills/calibre-metadata-apply/scripts/calibredb_apply.py", "--with-library", ns.with_library, *(["--username", ns.username] if ns.username else []), "--password-env", ns.password_env, "--lang", ns.lang, "--apply"],
+    subprocess.run(["python3", "/home/altair/clawd/skills/calibre-metadata-apply/scripts/calibredb_apply.py", "--with-library", ns.with_library, *(["--username", ns.username] if ns.username else []), "--password-env", ns.password_env, "--lang", ns.lang, "--apply"],
                    input=json.dumps(payload, ensure_ascii=False)+"\n", text=True, check=True)
 
     print(json.dumps({"ok": True, "book_id": ns.book_id, "title": title, "file_hash": fhash, "updated": True}, ensure_ascii=False))
