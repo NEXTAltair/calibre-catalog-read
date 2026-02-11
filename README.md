@@ -64,3 +64,22 @@ Use strict split turns on chat surfaces:
 2) Completion turn (later): completion event -> `handle_completion.py` (internally `get -> apply -> remove/fail`).
 
 Do not poll/wait/apply in the same turn as spawn.
+
+## Model troubleshooting note
+
+If subagent runs appear on an unexpected model, check runtime model policy first.
+This is usually not a skill logic issue.
+
+Recommended checks:
+
+```bash
+openclaw models status --json | jq '.allowed'
+jq '.agents.defaults.subagents.model' ~/.openclaw/openclaw.json
+openclaw sessions --active 10 --json | jq -r '.sessions[] | select(.key|contains(":subagent:")) | [.key,.model] | @tsv'
+```
+
+If needed, restart gateway and re-test spawn:
+
+```bash
+openclaw gateway restart
+```
