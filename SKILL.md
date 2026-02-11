@@ -87,6 +87,8 @@ Ask once, then proceed with the confirmed values.
 
 ## Subagent support (model-agnostic)
 
+Book-reading analysis is a heavy task. Use a subagent with a lightweight model for analysis generation, then return results to main agent for cache/apply steps.
+
 - Prompt template: `references/subagent-analysis.prompt.md`
 - Output schema: `references/subagent-analysis.schema.json`
 
@@ -95,3 +97,10 @@ Rules:
 - Keep final DB upsert and Calibre metadata apply in main agent.
 - Process one book per run.
 - Ask model/thinking/timeout in conversation before spawn and do not hardcode provider-specific model IDs.
+- Configure callback/announce behavior and rate-limit fallbacks using OpenClaw default model/subagent/fallback settings (not hardcoded in this skill).
+
+## Language policy
+
+- Do not hardcode user-language prose in pipeline scripts.
+- Generate user-visible analysis text from subagent output, with language controlled by user-selected settings and `lang` input.
+- Fallback local analysis in scripts is generic/minimal; preferred path is subagent output following the prompt template.

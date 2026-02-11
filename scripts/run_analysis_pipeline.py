@@ -19,28 +19,30 @@ def extract_text(epub: Path, out_txt: Path) -> None:
 
 
 def simple_analysis(text: str, lang: str) -> dict:
+    """Fallback local analysis.
+
+    Keep this language-neutral and lightweight.
+    Preferred path is subagent-generated analysis passed via --analysis-json,
+    where language is controlled by user-selected subagent prompt/settings.
+    """
     lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
     body = "\n".join(lines)
     head = body[:12000]
-    if lang == "ja":
-        summary = "本文冒頭を中心に要点を抽出した自動解析。必要箇所へ戻れる再読導線を付与。"
-        highlights = [
-            "主要トピックの把握に必要な語を抽出。",
-            "後で読み返すための再読ガイドを保持。",
-            "メタデータHTMLへ埋め込み可能な構造で保存。",
-        ]
-        reread = [{"section": "冒頭", "page": "EPUB-loc", "chunk_id": "auto-intro", "reason": "文脈の再確認"}]
-    else:
-        summary = "Auto analysis from opening sections with reread anchors."
-        highlights = ["Extract key terms from opening content.", "Store reread guidance.", "Persist structure for metadata HTML."]
-        reread = [{"section": "opening", "page": "EPUB-loc", "chunk_id": "auto-intro", "reason": "context refresh"}]
+
+    summary = "Auto analysis from opening sections with reread anchors."
+    highlights = [
+        "Extract key points from opening content.",
+        "Preserve reread guidance for quick return to source.",
+        "Persist structure suitable for metadata HTML embedding.",
+    ]
+    reread = [{"section": "opening", "page": "EPUB-loc", "chunk_id": "auto-intro", "reason": "context refresh"}]
 
     kws = []
-    for kw in ["海賊", "歴史", "設計", "章", "目次", "Python", "AI", "データ"]:
-        if kw in head:
+    for kw in ["chapter", "contents", "summary", "introduction", "data", "design", "history", "pirate", "AI", "Python"]:
+        if kw.lower() in head.lower():
             kws.append(kw)
     if kws:
-        highlights.append(("検出キーワード: " if lang == "ja" else "Detected keywords: ") + ", ".join(kws[:6]))
+        highlights.append("Detected keywords: " + ", ".join(kws[:6]))
     return {"summary": summary, "highlights": highlights[:5], "reread": reread}
 
 
