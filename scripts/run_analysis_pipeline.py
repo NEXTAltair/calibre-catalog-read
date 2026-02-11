@@ -46,6 +46,18 @@ def simple_analysis(text: str, lang: str) -> dict:
     return {"summary": summary, "highlights": highlights[:5], "reread": reread}
 
 
+def is_excluded_content(meta: dict) -> tuple[bool, str]:
+    title = str(meta.get("title") or "").lower()
+    tags = [str(t).lower() for t in (meta.get("tags") or [])]
+    manga_keys = ["漫画", "コミック", "マンガ", "comic", "manga", "graphic novel"]
+    for k in manga_keys:
+        if k in title:
+            return True, f"title matched excluded keyword: {k}"
+        if any(k in t for t in tags):
+            return True, f"tag matched excluded keyword: {k}"
+    return False, ""
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--with-library", required=True)
@@ -70,10 +82,15 @@ def main():
     cdir.mkdir(parents=True, exist_ok=True)
 
     # metadata
-    rows = json.loads(run(["calibredb", "--with-library", ns.with_library, *auth, "list", "--for-machine", "--search", f"id:{ns.book_id}", "--fields", "id,title", "--limit", "2"]))
+    rows = json.loads(run(["calibredb", "--with-library", ns.with_library, *auth, "list", "--for-machine", "--search", f"id:{ns.book_id}", "--fields", "id,title,tags,formats", "--limit", "2"]))
     if not rows:
         raise SystemExit("book not found")
     title = rows[0].get("title", "")
+
+    excluded, reason = is_excluded_content(rows[0])
+    if excluded:
+        print(json.dumps({"ok": True, "skipped": True, "reason": "excluded_content", "detail": reason, "book_id": ns.book_id, "title": title}, ensure_ascii=False))
+        return
 
     # export and hash
     run(["calibredb", "--with-library", ns.with_library, *auth, "export", str(ns.book_id), "--to-dir", str(cdir), "--single-dir", "--formats", ns.format, "--dont-write-opf", "--dont-save-cover", "--dont-save-extra-files", "--replace-whitespace"])

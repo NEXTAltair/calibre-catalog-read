@@ -98,6 +98,7 @@ Rules:
 - Process one book per run.
 - Ask model/thinking/timeout in conversation before spawn and do not hardcode provider-specific model IDs.
 - Configure callback/announce behavior and rate-limit fallbacks using OpenClaw default model/subagent/fallback settings (not hardcoded in this skill).
+- Exclude manga/comic-centric books from this text pipeline (skip when title/tags indicate manga/comic).
 
 ## Language policy
 

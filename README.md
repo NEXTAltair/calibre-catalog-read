@@ -2,6 +2,8 @@
 
 Calibre catalog lookup + one-book AI reading pipeline.
 
+Note: this pipeline excludes manga/comic-centric titles by design (cost/quality guard for text-only analysis).
+
 ## Setup
 
 1. Install Calibre in the OpenClaw execution environment (the machine/runtime that executes this skill).
