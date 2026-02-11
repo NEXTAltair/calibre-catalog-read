@@ -157,24 +157,28 @@ Required runtime sequence:
 If step 2 is skipped, pipeline falls back to local minimal analysis (only for emergency/testing).
 
 
-## Async interaction pattern (required for chat UX)
+## Chat execution model (required, strict)
 
-Use a two-phase response pattern on chat surfaces:
-1. Immediate ack from main agent: confirm selected book and say analysis is running in background.
-2. Run subagent asynchronously.
-3. Continue normal conversation while analysis runs.
-4. When subagent finishes, main agent applies DB/comments update and posts completion message.
+For Discord/chat, always run as **two separate turns**.
 
-Do not block a single listener turn waiting for full analysis output; always split into start/update turns on chat surfaces.
+### Turn A: start only (must be fast)
+- Select one target book.
+- Call `sessions_spawn`.
+- Record run state (`runId`) via `run_state.py upsert`.
+- Reply to user with selected title + "running in background".
+- **Stop turn here.**
 
+### Turn B: completion only (separate later turn)
+Trigger: completion announce/event for that run.
+- Resolve `runId` in `runs.json` via `run_state.py get`.
+- If missing: treat as stale/duplicate and do not apply blindly.
+- Apply analysis JSON to DB/comments.
+- On success: `run_state.py remove` and send completion reply.
+- On failure: `run_state.py fail` and send failure/retry guidance.
 
-## Execution mode for chat turns
-
-When running from chat listeners, enforce split turns:
-- Turn A (fast): acknowledge selected book and start background analysis.
-- Turn B (later): after analysis completion, apply metadata update and post result.
-
-Never block a single chat listener turn for full analysis + apply.
+Hard rule:
+- Never poll/wait/apply in Turn A.
+- Never keep a chat listener turn open waiting for subagent completion.
 
 ## Run state management (single-file, required)
 

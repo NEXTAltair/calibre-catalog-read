@@ -56,6 +56,11 @@ If extracted text is too short, the pipeline exits with `reason: low_text_requir
 Use `--force-low-text` only after user confirmation.
 
 
-## Two-turn chat operation
+## Two-turn chat operation (required)
 
-For Discord/chat usage, run in two turns: start analysis first, then post results after completion. This avoids slow-listener warnings.
+Use strict split turns on chat surfaces:
+
+1) Start turn (fast): select book -> spawn -> `run_state.py upsert` -> immediate ack.
+2) Completion turn (later): completion event -> `run_state.py get` -> apply -> `run_state.py remove`.
+
+Do not poll/wait/apply in the same turn as spawn.
