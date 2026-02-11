@@ -54,3 +54,8 @@ python3 scripts/prepare_subagent_input.py \
 
 If extracted text is too short, the pipeline exits with `reason: low_text_requires_confirmation` and asks for user confirmation (English prompt).
 Use `--force-low-text` only after user confirmation.
+
+
+## Two-turn chat operation
+
+For Discord/chat usage, run in two turns: start analysis first, then post results after completion. This avoids slow-listener warnings.

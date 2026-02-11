@@ -165,4 +165,13 @@ Use a two-phase response pattern on chat surfaces:
 3. Continue normal conversation while analysis runs.
 4. When subagent finishes, main agent applies DB/comments update and posts completion message.
 
-Do not block a single listener turn waiting for full analysis output.
+Do not block a single listener turn waiting for full analysis output; always split into start/update turns on chat surfaces.
+
+
+## Execution mode for chat turns
+
+When running from chat listeners, enforce split turns:
+- Turn A (fast): acknowledge selected book and start background analysis.
+- Turn B (later): after analysis completion, apply metadata update and post result.
+
+Never block a single chat listener turn for full analysis + apply.
