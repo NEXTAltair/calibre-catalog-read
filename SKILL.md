@@ -155,3 +155,14 @@ Required runtime sequence:
 4. Main agent passes that file via `--analysis-json` to `run_analysis_pipeline.py` for DB/apply.
 
 If step 2 is skipped, pipeline falls back to local minimal analysis (only for emergency/testing).
+
+
+## Async interaction pattern (required for chat UX)
+
+Use a two-phase response pattern on chat surfaces:
+1. Immediate ack from main agent: confirm selected book and say analysis is running in background.
+2. Run subagent asynchronously.
+3. Continue normal conversation while analysis runs.
+4. When subagent finishes, main agent applies DB/comments update and posts completion message.
+
+Do not block a single listener turn waiting for full analysis output.
