@@ -61,6 +61,6 @@ Use `--force-low-text` only after user confirmation.
 Use strict split turns on chat surfaces:
 
 1) Start turn (fast): select book -> spawn -> `run_state.py upsert` -> immediate ack.
-2) Completion turn (later): completion event -> `run_state.py get` -> apply -> `run_state.py remove`.
+2) Completion turn (later): completion event -> `handle_completion.py` (internally `get -> apply -> remove/fail`).
 
 Do not poll/wait/apply in the same turn as spawn.

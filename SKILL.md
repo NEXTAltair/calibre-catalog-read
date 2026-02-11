@@ -170,11 +170,10 @@ For Discord/chat, always run as **two separate turns**.
 
 ### Turn B: completion only (separate later turn)
 Trigger: completion announce/event for that run.
-- Resolve `runId` in `runs.json` via `run_state.py get`.
-- If missing: treat as stale/duplicate and do not apply blindly.
-- Apply analysis JSON to DB/comments.
-- On success: `run_state.py remove` and send completion reply.
-- On failure: `run_state.py fail` and send failure/retry guidance.
+- Run one command only (completion handler):
+  - `scripts/handle_completion.py` (`get -> apply -> remove`, and `fail` on error).
+- If `runId` is missing, handler returns `stale_or_duplicate` and does nothing.
+- Send completion/failure reply from handler result.
 
 Hard rule:
 - Never poll/wait/apply in Turn A.
@@ -200,18 +199,19 @@ Rules:
 - Ignore duplicate completion events when record is already removed.
 - If record is missing at completion time, report as stale/unknown run and do not apply blindly.
 
-Use helper script (avoid ad-hoc env var mistakes):
+Use helper scripts (avoid ad-hoc env var mistakes):
 
 ```bash
+# Turn A: register running task
 python3 skills/calibre-catalog-read/scripts/run_state.py upsert \
   --state skills/calibre-catalog-read/state/runs.json \
   --run-id <RUN_ID> --book-id <BOOK_ID> --title "<TITLE>"
 
-python3 skills/calibre-catalog-read/scripts/run_state.py remove \
+# Turn B: completion handler (preferred)
+python3 skills/calibre-catalog-read/scripts/handle_completion.py \
   --state skills/calibre-catalog-read/state/runs.json \
-  --run-id <RUN_ID>
-
-python3 skills/calibre-catalog-read/scripts/run_state.py fail \
-  --state skills/calibre-catalog-read/state/runs.json \
-  --run-id <RUN_ID> --error "<ERROR>"
+  --run-id <RUN_ID> \
+  --analysis-json /tmp/calibre_<BOOK_ID>/analysis.json \
+  --with-library "http://HOST:PORT/#LIBRARY_ID" \
+  --username user --password-env CALIBRE_PASSWORD --lang ja
 ```
