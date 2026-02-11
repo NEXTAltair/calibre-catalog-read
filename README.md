@@ -4,9 +4,8 @@ Calibre catalog lookup + one-book AI reading pipeline.
 
 ## Setup
 
-1. Install Calibre on the runtime machine.
-   - Required: `calibredb`
-   - Required for extraction: `ebook-convert`
+1. Install Calibre in the OpenClaw execution environment (the machine/runtime that executes this skill).
+   - This provides required binaries: `calibredb` and `ebook-convert`
 2. Ensure binaries are on PATH.
 3. Ensure Calibre Content server is reachable.
 4. Always use explicit `HOST:PORT` in:
@@ -15,7 +14,7 @@ Calibre catalog lookup + one-book AI reading pipeline.
 
 ## Important
 
-OpenClaw alone is not enough: runtime must have `calibredb`.
+OpenClaw alone is not enough: install Calibre in the OpenClaw execution environment so required binaries are available.
 
 On Windows, metadata/file operations can fail under Defender Controlled Folder Access.
 If writes fail with WinError 2/5, add Calibre library folder/binaries to allowlist.
