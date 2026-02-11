@@ -1,27 +1,27 @@
 # calibre-catalog-read
 
-Calibre catalog lookup + one-book AI reading pipeline.
+Calibreカタログ参照 + 1冊単位のAI読書パイプライン。
 
-Note: this pipeline excludes manga/comic-centric titles by design (cost/quality guard for text-only analysis).
+注: このパイプラインは、テキスト解析コスト/品質の観点から漫画・コミック系タイトルを対象外にする設計です。
 
-## Setup
+## セットアップ
 
-1. Install Calibre in the OpenClaw execution environment (the machine/runtime that executes this skill).
-   - This provides required binaries: `calibredb` and `ebook-convert`
-2. Ensure binaries are on PATH.
-3. Ensure Calibre Content server is reachable.
-4. Always use explicit `HOST:PORT` in:
+1. OpenClaw実行環境（このスキルを実行するマシン/ランタイム）にCalibreをインストールする。
+   - 必須バイナリ: `calibredb` / `ebook-convert`
+2. 上記バイナリがPATHに通っていることを確認する。
+3. Calibre Content serverへ到達できることを確認する。
+4. 接続先は必ず明示的な `HOST:PORT` を使う。
    - `http://HOST:PORT/#LIBRARY_ID`
-5. If auth is enabled, pass username/password env.
+5. 認証が有効な場合は `username` と `password env` を指定する。
 
-## Important
+## 重要
 
-OpenClaw alone is not enough: install Calibre in the OpenClaw execution environment so required binaries are available.
+OpenClaw単体では不足です。実行環境にCalibreを入れて、必要バイナリを利用可能にしてください。
 
-On Windows, metadata/file operations can fail under Defender Controlled Folder Access.
-If writes fail with WinError 2/5, add Calibre library folder/binaries to allowlist.
+WindowsではDefender Controlled Folder Accessの影響でメタデータ/ファイル操作が失敗する場合があります。
+`WinError 2/5` が出る場合は、Calibreライブラリフォルダや関連バイナリを許可対象に追加してください。
 
-## Quick test (catalog)
+## クイックテスト（カタログ参照）
 
 ```bash
 node scripts/calibredb_read.mjs list \
@@ -30,7 +30,7 @@ node scripts/calibredb_read.mjs list \
   --limit 5
 ```
 
-## Quick test (one-book pipeline)
+## クイックテスト（1冊パイプライン）
 
 ```bash
 python3 scripts/run_analysis_pipeline.py \
@@ -39,9 +39,9 @@ python3 scripts/run_analysis_pipeline.py \
   --book-id 3 --lang ja
 ```
 
-## Subagent input chunking (recommended)
+## サブエージェント入力の分割（推奨）
 
-To avoid read-tool line-size issues, split extracted text and pass file list to subagent via `subagent_input.json`:
+readツールの行サイズ制限を避けるため、抽出テキストを分割し、`subagent_input.json` 経由で `source_files` を渡します。
 
 ```bash
 python3 scripts/prepare_subagent_input.py \
@@ -49,37 +49,16 @@ python3 scripts/prepare_subagent_input.py \
   --text-path /tmp/book_3.txt --out-dir /tmp/calibre_subagent_3
 ```
 
+## 低テキスト時の安全策
 
-## Low-text safeguard
+抽出テキストが短すぎる場合、パイプラインは `reason: low_text_requires_confirmation` で停止し、確認を要求します。
+`--force-low-text` はユーザー確認後のみ使ってください。
 
-If extracted text is too short, the pipeline exits with `reason: low_text_requires_confirmation` and asks for user confirmation (English prompt).
-Use `--force-low-text` only after user confirmation.
+## チャット運用（必須: 2ターン）
 
+チャット面では必ず2ターンに分けて実行します。
 
-## Two-turn chat operation (required)
+1) 開始ターン（高速）: 対象選定 -> spawn -> `run_state.py upsert` -> 即時ACK
+2) 完了ターン（後続）: 完了イベント -> `handle_completion.py`（内部で `get -> apply -> remove/fail`）
 
-Use strict split turns on chat surfaces:
-
-1) Start turn (fast): select book -> spawn -> `run_state.py upsert` -> immediate ack.
-2) Completion turn (later): completion event -> `handle_completion.py` (internally `get -> apply -> remove/fail`).
-
-Do not poll/wait/apply in the same turn as spawn.
-
-## Model troubleshooting note
-
-If subagent runs appear on an unexpected model, check runtime model policy first.
-This is usually not a skill logic issue.
-
-Recommended checks:
-
-```bash
-openclaw models status --json | jq '.allowed'
-jq '.agents.defaults.subagents.model' ~/.openclaw/openclaw.json
-openclaw sessions --active 10 --json | jq -r '.sessions[] | select(.key|contains(":subagent:")) | [.key,.model] | @tsv'
-```
-
-If needed, restart gateway and re-test spawn:
-
-```bash
-openclaw gateway restart
-```
+spawnと同一ターンで `poll/wait/apply` を行わないでください。
