@@ -195,3 +195,19 @@ Rules:
 - Keep this file small and operational (active/failed records only).
 - Ignore duplicate completion events when record is already removed.
 - If record is missing at completion time, report as stale/unknown run and do not apply blindly.
+
+Use helper script (avoid ad-hoc env var mistakes):
+
+```bash
+python3 skills/calibre-catalog-read/scripts/run_state.py upsert \
+  --state skills/calibre-catalog-read/state/runs.json \
+  --run-id <RUN_ID> --book-id <BOOK_ID> --title "<TITLE>"
+
+python3 skills/calibre-catalog-read/scripts/run_state.py remove \
+  --state skills/calibre-catalog-read/state/runs.json \
+  --run-id <RUN_ID>
+
+python3 skills/calibre-catalog-read/scripts/run_state.py fail \
+  --state skills/calibre-catalog-read/state/runs.json \
+  --run-id <RUN_ID> --error "<ERROR>"
+```
