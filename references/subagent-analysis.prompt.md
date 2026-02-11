@@ -36,4 +36,4 @@ Quality constraints:
 - thinking: <low|medium|high>
 - runTimeoutSeconds: <integer seconds>
 
-Do not invent these values. Ask user when missing.
+Do not invent these values. Confirm once at session start and reuse unless user requests a change.

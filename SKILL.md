@@ -103,13 +103,12 @@ Use this split to avoid long blocking turns on chat listeners.
 
 ## Subagent pre-flight (required)
 
-Before spawning a subagent for analysis, ask the user and confirm:
-- `model` (lightweight model id they want)
+Before first subagent run in a session, confirm once:
+- `model`
 - `thinking` (`low`/`medium`/`high`)
 - `runTimeoutSeconds`
 
-If the user did not specify these in the current request, do not assume defaults silently.
-Ask once, then proceed with the confirmed values.
+Do not ask on every run. Reuse the confirmed settings for subsequent books in the same session unless the user asks to change them.
 
 ## Subagent support (model-agnostic)
 
@@ -122,7 +121,7 @@ Rules:
 - Use subagent only for heavy analysis generation; keep main agent lightweight and non-blocking.
 - Keep final DB upsert and Calibre metadata apply in main agent.
 - Process one book per run.
-- Ask model/thinking/timeout in conversation before spawn and do not hardcode provider-specific model IDs.
+- Confirm model/thinking/timeout once per session, then reuse; do not hardcode provider-specific model IDs in the skill.
 - Configure callback/announce behavior and rate-limit fallbacks using OpenClaw default model/subagent/fallback settings (not hardcoded in this skill).
 - Exclude manga/comic-centric books from this text pipeline (skip when title/tags indicate manga/comic).
 - If extracted text is too short, stop and ask user for confirmation before continuing.
