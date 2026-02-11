@@ -69,6 +69,8 @@ def main():
     ap.add_argument("--lang", default="ja", choices=["ja", "en"])
     ap.add_argument("--cache-dir", default="/home/altair/clawd/.cache/calibre/pipeline")
     ap.add_argument("--analysis-json", help="Optional path to subagent-produced analysis JSON (schema in references/subagent-analysis.schema.json)")
+    ap.add_argument("--min-text-chars", type=int, default=1200, help="Minimum extracted text chars before proceeding without confirmation")
+    ap.add_argument("--force-low-text", action="store_true", help="Proceed even when extracted text is below threshold")
     ns = ap.parse_args()
 
     pw = os.environ.get(ns.password_env, "")
@@ -109,10 +111,25 @@ def main():
     txt = cdir / f"book_{ns.book_id}.txt"
     extract_text(src, txt)
 
+    extracted = txt.read_text(errors="ignore")
+    text_chars = len("".join(ch for ch in extracted if not ch.isspace()))
+    if (not ns.analysis_json) and (not ns.force_low_text) and text_chars < ns.min_text_chars:
+        print(json.dumps({
+            "ok": True,
+            "skipped": True,
+            "reason": "low_text_requires_confirmation",
+            "book_id": ns.book_id,
+            "title": title,
+            "text_chars": text_chars,
+            "min_text_chars": ns.min_text_chars,
+            "prompt_en": "Extracted text is very short, likely image/comic-heavy. Summary quality may be poor. Continue anyway?"
+        }, ensure_ascii=False))
+        return
+
     if ns.analysis_json:
         analysis_core = json.loads(Path(ns.analysis_json).read_text())
     else:
-        analysis_core = simple_analysis(txt.read_text(errors="ignore"), ns.lang)
+        analysis_core = simple_analysis(extracted, ns.lang)
 
     record = {
         "book_id": ns.book_id,

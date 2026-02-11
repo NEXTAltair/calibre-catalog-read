@@ -38,3 +38,9 @@ python3 scripts/run_analysis_pipeline.py \
   --username user --password-env CALIBRE_PASSWORD \
   --book-id 3 --lang ja
 ```
+
+
+## Low-text safeguard
+
+If extracted text is too short, the pipeline exits with `reason: low_text_requires_confirmation` and asks for user confirmation (English prompt).
+Use `--force-low-text` only after user confirmation.

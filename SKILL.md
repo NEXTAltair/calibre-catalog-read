@@ -99,6 +99,8 @@ Rules:
 - Ask model/thinking/timeout in conversation before spawn and do not hardcode provider-specific model IDs.
 - Configure callback/announce behavior and rate-limit fallbacks using OpenClaw default model/subagent/fallback settings (not hardcoded in this skill).
 - Exclude manga/comic-centric books from this text pipeline (skip when title/tags indicate manga/comic).
+- If extracted text is too short, stop and ask user for confirmation before continuing.
+  - The pipeline returns `reason: low_text_requires_confirmation` with `prompt_en` text.
 
 ## Language policy
 
