@@ -39,3 +39,20 @@ Quality constraints:
 - runTimeoutSeconds: <integer seconds>
 
 Do not invent these values. Confirm once at session start and reuse unless user requests a change.
+
+
+## Strict read contract
+
+- Read `subagent_input.json` using exactly: `{"path":"<file>"}`.
+- Parse `source_files` from that JSON.
+- Read each source file exactly once, in order, using exactly: `{"path":"<file>"}`.
+- Do not use `file_path`.
+- Do not use offset/limit pagination for this workflow.
+- If a source file read fails, stop and return JSON with:
+  - `book_id`, `lang`, `summary` (short error note), `highlights` (1 item), `reread` (1 item), `tags` (include `analysis-error`).
+
+## Output discipline
+
+- Return raw JSON object only.
+- No markdown fences.
+- No prose before/after JSON.

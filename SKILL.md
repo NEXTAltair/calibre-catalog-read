@@ -115,6 +115,7 @@ Do not ask on every run. Reuse the confirmed settings for subsequent books in th
 Book-reading analysis is a heavy task. Use a subagent with a lightweight model for analysis generation, then return results to main agent for cache/apply steps.
 
 - Prompt template: `references/subagent-analysis.prompt.md`
+- Input schema: `references/subagent-input.schema.json`
 - Output schema: `references/subagent-analysis.schema.json`
 - Input preparation helper: `scripts/prepare_subagent_input.py`
   - Splits extracted text into multiple files to avoid read-tool single-line size issues.
