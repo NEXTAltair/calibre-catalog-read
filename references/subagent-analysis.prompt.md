@@ -29,3 +29,11 @@ Quality constraints:
 - Highlights: concrete points, no fluff.
 - Reread: provide actionable anchors.
 - Tags: useful for retrieval and review.
+
+
+## Runtime knobs (provided by user)
+- model: <user-selected lightweight model id>
+- thinking: <low|medium|high>
+- runTimeoutSeconds: <integer seconds>
+
+Do not invent these values. Ask user when missing.

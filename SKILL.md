@@ -75,6 +75,16 @@ python3 skills/calibre-catalog-read/scripts/analysis_db.py status \
   --book-id 3 --format EPUB
 ```
 
+## Subagent pre-flight (required)
+
+Before spawning a subagent for analysis, ask the user and confirm:
+- `model` (lightweight model id they want)
+- `thinking` (`low`/`medium`/`high`)
+- `runTimeoutSeconds`
+
+If the user did not specify these in the current request, do not assume defaults silently.
+Ask once, then proceed with the confirmed values.
+
 ## Subagent support (model-agnostic)
 
 - Prompt template: `references/subagent-analysis.prompt.md`
@@ -84,4 +94,4 @@ Rules:
 - Use subagent only for analysis generation.
 - Keep final DB upsert and Calibre metadata apply in main agent.
 - Process one book per run.
-- Ask model/thinking/timeout in conversation and do not hardcode provider-specific model IDs.
+- Ask model/thinking/timeout in conversation before spawn and do not hardcode provider-specific model IDs.
