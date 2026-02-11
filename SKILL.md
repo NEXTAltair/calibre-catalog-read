@@ -175,3 +175,23 @@ When running from chat listeners, enforce split turns:
 - Turn B (later): after analysis completion, apply metadata update and post result.
 
 Never block a single chat listener turn for full analysis + apply.
+
+## Run state management (single-file, required)
+
+For one-book-at-a-time operation, keep a single JSON state file:
+- `skills/calibre-catalog-read/state/runs.json`
+
+Use `runId` as the primary key (subagent execution id).
+
+Lifecycle:
+1. On spawn acceptance, upsert one record:
+   - `runId`, `book_id`, `title`, `status: "running"`, `started_at`
+2. Do not wait/poll inside the same chat turn.
+3. On completion announce, load record by `runId` and run apply.
+4. On successful apply, delete that record immediately.
+5. On failure, set `status: "failed"` + `error` and keep record for retry/debug.
+
+Rules:
+- Keep this file small and operational (active/failed records only).
+- Ignore duplicate completion events when record is already removed.
+- If record is missing at completion time, report as stale/unknown run and do not apply blindly.
