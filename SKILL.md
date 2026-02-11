@@ -75,6 +75,32 @@ python3 skills/calibre-catalog-read/scripts/analysis_db.py status \
   --book-id 3 --format EPUB
 ```
 
+
+## Main vs Subagent responsibility (strict split)
+
+Use this split to avoid long blocking turns on chat listeners.
+
+### Main agent (fast control plane)
+- Validate user intent and target `book_id`.
+- Confirm subagent runtime knobs: `model`, `thinking`, `runTimeoutSeconds`.
+- Start subagent and return a short progress reply quickly.
+- After subagent result arrives, run DB upsert + Calibre apply.
+- Report final result to user.
+
+### Subagent (heavy analysis plane)
+- Read extracted source payload.
+- Generate analysis JSON strictly by schema.
+- Do not run metadata apply or user-facing channel actions.
+
+### Never do in main when avoidable
+- Long-form content analysis generation.
+- Multi-step heavy reasoning over full excerpts.
+
+### Turn policy
+- One book per run.
+- Prefer asynchronous flow: quick ack first, final result after analysis.
+- If analysis is unavailable, either ask user or use fallback only when explicitly acceptable.
+
 ## Subagent pre-flight (required)
 
 Before spawning a subagent for analysis, ask the user and confirm:
@@ -93,7 +119,7 @@ Book-reading analysis is a heavy task. Use a subagent with a lightweight model f
 - Output schema: `references/subagent-analysis.schema.json`
 
 Rules:
-- Use subagent only for analysis generation.
+- Use subagent only for heavy analysis generation; keep main agent lightweight and non-blocking.
 - Keep final DB upsert and Calibre metadata apply in main agent.
 - Process one book per run.
 - Ask model/thinking/timeout in conversation before spawn and do not hardcode provider-specific model IDs.
