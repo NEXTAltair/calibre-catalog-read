@@ -6,6 +6,6 @@ This repository has been archived and is no longer updated.
 
 All active custom skills have moved to:
 
-https://github.com/NEXTAltair/openclaw-custom-skills
+https://github.com/NEXTAltair/Openclaw-Skills
 
 Please use the monorepo above for issues, updates, and future changes.
